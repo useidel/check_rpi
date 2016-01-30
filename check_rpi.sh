@@ -126,11 +126,11 @@ do
 		MYCHECK=temperature
 		;;
         w)
-                WARNLEVEL=$3
+                WARNLEVEL=$OPTARG
 		CUSTOMWARNCRIT=1
                 ;;
         c)
-                CRITLEVEL=$5
+                CRITLEVEL=$OPTARG
 		CUSTOMWARNCRIT=1
                 ;;
 	*)
