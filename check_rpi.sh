@@ -73,7 +73,17 @@ else
 EXITSTATUS=$STATE_OK
 fi
 
-RPITEMP=`cat /sys/class/thermal/thermal_zone0/temp`
+if [ -e /sys/class/thermal/thermal_zone0/temp ]; then
+	RPITEMP=`cat /sys/class/thermal/thermal_zone0/temp`
+else
+	if [ -e /sys/class/hwmon/hwmon0/temp1_input ]; then
+		RPITEMP=`cat /sys/class/hwmon/hwmon0/temp1_input`
+	else
+		echo " Cannot measure the temperature"
+		exit 1
+	fi
+fi
+
 RPITEMP=`echo "$RPITEMP / 1000"| $BC`
 
 if [ $CUSTOMWARNCRIT -ne 0 ]; then
