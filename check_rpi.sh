@@ -1,5 +1,5 @@
-#!/bin/bash
-# RPi plugin for Nagios
+#!/bin/sh
+# RPi plugin for Nagios/Icinga
 # Written by Udo Seidel
 #
 # Description:
@@ -7,9 +7,6 @@
 # This plugin will check the temperatue of the RPi
 #
 # Location of the sudo, vcgencmd and bc command (if not in path)
-SUDO="/usr/bin/sudo"
-BC="/usr/bin/bc"
-VCGENCMD="/usr/bin/vcgencmd"
 MYTEST=""
 CUSTOMWARNCRIT=0 # no external defined warning and critical levels
 
@@ -52,6 +49,7 @@ if [ "$#" -lt 1 ]; then
 fi
 
 check_vcgencmd() {
+VCGENCMD="/usr/bin/vcgencmd"
 if [ ! -x "$VCGENCMD" ]
 then
         echo "UNKNOWN: $VCGENCMD not found or is not executable by the nagios user"
@@ -60,32 +58,7 @@ then
 fi
 }
 
-
-check_temperature() {
-
-# run a basic bc to see if it works
-echo "2+2" | $BC > /dev/null 2>&1
-
-if [ $? -ne 0 ]
-then
-EXITSTATUS=$STATE_CRITICAL
-else
-EXITSTATUS=$STATE_OK
-fi
-
-if [ -e /sys/class/thermal/thermal_zone0/temp ]; then
-	RPITEMP=`cat /sys/class/thermal/thermal_zone0/temp`
-else
-	if [ -e /sys/class/hwmon/hwmon0/temp1_input ]; then
-		RPITEMP=`cat /sys/class/hwmon/hwmon0/temp1_input`
-	else
-		echo " Cannot measure the temperature"
-		exit 1
-	fi
-fi
-
-RPITEMP=`echo "$RPITEMP / 1000"| $BC`
-
+check_temperature_warning_critical() {
 if [ $CUSTOMWARNCRIT -ne 0 ]; then
 	# check if the levels are integers
 	echo $WARNLEVEL | awk '{ exit ! /^[0-9]+$/ }'
@@ -124,6 +97,56 @@ else
 fi
 }
 
+check_temperature_linux() {
+SUDO="/usr/bin/sudo"
+BC="/usr/bin/bc"
+
+# run a basic bc to see if it works
+echo "2+2" | $BC > /dev/null 2>&1
+
+if [ $? -ne 0 ]
+then
+EXITSTATUS=$STATE_CRITICAL
+else
+EXITSTATUS=$STATE_OK
+fi
+
+if [ -e /sys/class/thermal/thermal_zone0/temp ]; then
+        RPITEMP=`cat /sys/class/thermal/thermal_zone0/temp`
+else
+        if [ -e /sys/class/hwmon/hwmon0/temp1_input ]; then
+                RPITEMP=`cat /sys/class/hwmon/hwmon0/temp1_input`
+        else
+                echo " Cannot measure the temperature"
+                exit 1
+        fi
+fi
+
+RPITEMP=`echo "$RPITEMP / 1000"| $BC`
+}
+
+
+check_temperature_openbsd() {
+SUDO="/usr/local/bin/sudo"
+RPITEMP=`sysctl hw.sensors.bcmtmon0.temp0|cut -f2 -d"="|cut -f1 -d"."`
+}
+
+check_temperature() {
+case `uname -s` in
+Linux)
+	check_temperature_linux
+	check_temperature_warning_critical
+	;;
+OpenBSD)
+	check_temperature_openbsd
+	check_temperature_warning_critical
+	;;
+*)
+	print_usage
+	exit $STATE_UNKNOWN
+	;;
+esac
+}
 
 while getopts "htw:c:" OPT
 do		
