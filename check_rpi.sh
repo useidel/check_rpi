@@ -6,18 +6,14 @@
 #
 # This plugin will check the temperatue of the RPi
 #
-# Location of the sudo, vcgencmd and bc command (if not in path)
 MYTEST=""
 CUSTOMWARNCRIT=0 # no external defined warning and critical levels
 
-# sudo is needed if vcgencmd cannot be executed by the nagios 
-# user context w/o sudo granted priviledges
-#
 # However, for the temperature we can use a different method
 # which does not need elevated rights ...
 # good enough for a start ....
 
-# Nagios return codes
+# Nagios/Icinga return codes
 STATE_OK=0
 STATE_WARNING=1
 STATE_CRITICAL=2
@@ -47,16 +43,6 @@ if [ "$#" -lt 1 ]; then
         EXITSTATUS=$STATE_UNKNOWN
         exit $EXITSTATUS
 fi
-
-check_vcgencmd() {
-VCGENCMD="/usr/bin/vcgencmd"
-if [ ! -x "$VCGENCMD" ]
-then
-        echo "UNKNOWN: $VCGENCMD not found or is not executable by the nagios user"
-        EXITSTATUS=$STATE_UNKNOWN
-        exit $EXITSTATUS
-fi
-}
 
 check_temperature_warning_critical() {
 if [ $CUSTOMWARNCRIT -ne 0 ]; then
@@ -98,7 +84,6 @@ fi
 }
 
 check_temperature_linux() {
-SUDO="/usr/bin/sudo"
 BC="/usr/bin/bc"
 
 # run a basic bc to see if it works
@@ -127,8 +112,16 @@ RPITEMP=`echo "$RPITEMP / 1000"| $BC`
 
 
 check_temperature_openbsd() {
-SUDO="/usr/local/bin/sudo"
+
 RPITEMP=`sysctl hw.sensors.bcmtmon0.temp0|cut -f2 -d"="|cut -f1 -d"."`
+
+# check if we have received an integer, i.e. is the hardware supported by bcmtmon
+echo $RPITEMP | awk '{ exit ! /^[0-9]+$/ }'
+if [ $? -ne 0 ]; then
+	echo " Cannot measure the temperature"
+	exit 1
+fi
+
 }
 
 check_temperature() {
@@ -172,7 +165,6 @@ do
 	esac
 done
 
-####check_vcgencmd
 check_$MYCHECK
 
 exit $EXITSTATUS
