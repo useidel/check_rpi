@@ -103,7 +103,7 @@ else
                 RPITEMP=`cat /sys/class/hwmon/hwmon0/temp1_input`
         else
                 echo " Cannot measure the temperature"
-                exit 1
+		exit $STATE_UNKNOWN
         fi
 fi
 
@@ -119,7 +119,7 @@ RPITEMP=`sysctl hw.sensors.bcmtmon0.temp0|cut -f2 -d"="|cut -f1 -d"."`
 echo $RPITEMP | awk '{ exit ! /^[0-9]+$/ }'
 if [ $? -ne 0 ]; then
 	echo " Cannot measure the temperature"
-	exit 1
+	exit $STATE_UNKNOWN
 fi
 
 }
@@ -127,12 +127,12 @@ fi
 check_temperature() {
 case `uname -s` in
 Linux)
-	check_temperature_linux
 	check_temperature_warning_critical
+	check_temperature_linux
 	;;
 OpenBSD)
-	check_temperature_openbsd
 	check_temperature_warning_critical
+	check_temperature_openbsd
 	;;
 *)
 	print_usage
