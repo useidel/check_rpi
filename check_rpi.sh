@@ -6,7 +6,7 @@
 #
 # This plugin will check the temperatue of the RPi
 #
-MYTEST=""
+MYCHECK=""
 CUSTOMWARNCRIT=0 # no external defined warning and critical levels
 
 # However, for the temperature we can use a different method
