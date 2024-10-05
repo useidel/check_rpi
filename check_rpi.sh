@@ -127,12 +127,12 @@ fi
 check_temperature() {
 case `uname -s` in
 Linux)
-	check_temperature_warning_critical
 	check_temperature_linux
+	check_temperature_warning_critical
 	;;
 OpenBSD)
-	check_temperature_warning_critical
 	check_temperature_openbsd
+	check_temperature_warning_critical
 	;;
 *)
 	print_usage
