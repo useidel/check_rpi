@@ -1,0 +1,25 @@
+# check_rpi
+
+> A Nagios plugin for checking Raspberry Pi temperature.
+
+The shell plugin reports Raspberry Pi temperature and accepts warning and critical thresholds for monitoring systems.
+
+## Repository overview
+
+- [Source repository](https://github.com/useidel/check_rpi): Canonical GitHub repository, including source files, issues, history, and repository metadata.
+- [README](https://raw.githubusercontent.com/useidel/check_rpi/HEAD/README.md): Primary project documentation and usage notes.
+
+## Topics
+
+- Nagios
+- Raspberry Pi
+- Shell monitoring plugin
+
+## Additional resources
+
+- [Main plugin script](https://raw.githubusercontent.com/useidel/check_rpi/HEAD/check_rpi.sh)
+
+## Optional
+
+- [Repository activity](https://github.com/useidel/check_rpi/commits): Commit history for implementation changes and maintenance context.
+- [Issues](https://github.com/useidel/check_rpi/issues): Questions, bug reports, and project discussions when enabled.
